@@ -1,6 +1,7 @@
 package com.example.crudmongodb.controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -42,12 +43,23 @@ public class ProductController {
 	@PutMapping("/product/{id}")
 	public ResponseEntity<ProductDTO> update(@PathVariable String id, @Validated @RequestBody ProductDTO p) {
 
-		return new ResponseEntity<>(repository.save(p), HttpStatus.CREATED);
+		Optional<ProductDTO> opt = repository.findById(id);
+		if (opt.isPresent()) {
+
+			ProductDTO productDTO = opt.get();
+			productDTO.setName(p.getName());
+			productDTO.setPrice(p.getPrice());
+			productDTO.setExpiration_date(p.getExpiration_date());
+
+			return new ResponseEntity<>(repository.save(productDTO), HttpStatus.OK);
+		} else {
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
 	}
 
 	@DeleteMapping("/product/{id}")
 	public ResponseEntity<String> delete(@PathVariable String id) {
-		
+
 		repository.deleteById(id);
 		return ResponseEntity.ok("Product with id " + id + " was deleted");
 
